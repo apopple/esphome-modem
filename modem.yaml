@@ -1,0 +1,71 @@
+esphome:
+  name: modem
+  platformio_options:
+    board_build.mcu: esp32
+    board_build.variant: esp32
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: esp-idf
+    version: 5.2.1
+    platform_version: 6.6.0
+    sdkconfig_options:
+      CONFIG_LWIP_PPP_SUPPORT: y
+      CONFIG_ESP_TLS_PSK_VERIFICATION: y
+      CONFIG_ESP_TASK_WDT_TIMEOUT_S: "60"
+      CONFIG_MQTT_PROTOCOL_5: y
+    components:
+      - name: esp-protocols
+        source: github://espressif/esp-protocols@modem-v1.0.1
+        path: components/esp_modem
+        refresh: 7d
+
+# Enable logging
+logger:
+
+external_components:
+  - source: components
+
+#time:
+#  - platform: sntp
+#    id: sntp_time
+#    timezone: Australia/Sydney
+#    on_time_sync:
+#      then:
+#        - logger.log: "Synchronized system clock"
+
+esp_modem:
+  power_gpio: 4
+  flight_gpio: 25
+  uart_num: 2
+  uart_txd: 27
+  uart_rxd: 26
+  apn: "simbase"
+  on_connect:
+    - light.turn_on: blue_led_light
+
+debug:
+  update_interval: 5s
+
+output:
+  - platform: gpio
+    pin: 12
+    id: blue_led
+
+light:
+  - platform: binary
+    id: blue_led_light
+    name: "blue LED"
+    output: blue_led
+
+#interval:
+#  - interval: 500ms
+#    then:
+#      - light.toggle: blue_led_light
+
+mqtt:
+  broker: !secret mqtt_broker_url
+  port: 1883
+  tls_psk: !secret mqtt_tls_psk
+  tls_psk_hint: !secret mqtt_tls_psk_hint

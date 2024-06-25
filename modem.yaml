@@ -42,8 +42,6 @@ esp_modem:
   uart_txd: 27
   uart_rxd: 26
   apn: "simbase"
-  on_connect:
-    - light.turn_on: blue_led_light
 
 debug:
   update_interval: 5s
@@ -69,3 +67,41 @@ mqtt:
   port: 1883
   tls_psk: !secret mqtt_tls_psk
   tls_psk_hint: !secret mqtt_tls_psk_hint
+  on_connect:
+    - light.turn_on: blue_led_light
+  on_disconnect:
+    - light.turn_off: blue_led_light
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+
+sensor:
+  - platform: adc
+    name: "Battery Voltage"
+    pin: GPIO35
+    update_interval: 30s
+    attenuation: auto
+    filters:
+      - multiply: 2.0
+
+  - platform: bmp280
+    temperature:
+      name: "BMP Temperature"
+      oversampling: 16x
+    pressure:
+      name: "Pressure"
+    #address: 0x77
+    update_interval: 30s
+
+  - platform: aht10
+    variant: AHT20
+    temperature:
+      name: "Temperature"
+    humidity:
+      name: "Humidity"
+    update_interval: 30s
+
+deep_sleep:
+  run_duration: 60s
+  sleep_duration: 4min
